@@ -56,15 +56,6 @@ myHandler: async (sprite, params, dispatch) => {
 
 ✅ **That's it!** The block automatically appears in the sidebar and works in the animation engine.
 
-## Architecture Benefits
-
-- 🎯 **90% less code** for new blocks
-- 📋 **Single source of truth** for block definitions  
-- 🔄 **Automatic UI generation** from configuration
-- 🧩 **Modular execution handlers**
-- 🪚 **Easy testing and maintenance**
-- ⚡ **Hot-swappable block definitions**
-
 ## Current Block Types
 
 | Category | Blocks | Description |
