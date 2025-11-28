@@ -1,12 +1,12 @@
 import React from "react";
 import { useSpriteStore } from "../store/SpriteStore";
-import { useAnimationEngine } from "./AnimationEngine";
+import { useDataDrivenEngine } from "../engine/DataDrivenEngine";
 import Sprite from "./Sprite";
 import Icon from "./Icon";
 
 export default function PreviewArea() {
   const { state, dispatch } = useSpriteStore();
-  const { runAnimations } = useAnimationEngine();
+  const { runAnimations } = useDataDrivenEngine();
 
   const handlePlay = () => {
     runAnimations();

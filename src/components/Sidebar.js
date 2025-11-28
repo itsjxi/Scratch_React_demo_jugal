@@ -1,39 +1,33 @@
-import React from "react";
-import Icon from "./Icon";
-import { MoveStepsBlock, TurnDegreesBlock, GoToBlock } from "./blocks/MotionBlocks";
-import { SayBlock, ThinkBlock } from "./blocks/LooksBlocks";
-import { RepeatBlock } from "./blocks/ControlBlocks";
+import React from 'react';
+import { BLOCKS_BY_CATEGORY, BLOCK_CATEGORIES } from '../config/blockDefinitions';
+import GenericBlock from './GenericBlock';
 
 export default function Sidebar() {
+  const handleDragStart = (e, blockData) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify(blockData));
+  };
+
+  const categoryLabels = {
+    [BLOCK_CATEGORIES.EVENTS]: 'Events',
+    [BLOCK_CATEGORIES.MOTION]: 'Motion', 
+    [BLOCK_CATEGORIES.LOOKS]: 'Looks',
+    [BLOCK_CATEGORIES.CONTROL]: 'Control'
+  };
+
   return (
     <div className="sidebar">
-      <h3>Events</h3>
-      <div 
-        className="block event-block" 
-        draggable={true}
-        onDragStart={(e) => {
-          e.dataTransfer.setData('text/plain', JSON.stringify({
-            type: 'EVENT_FLAG'
-          }));
-        }}
-        style={{cursor: 'grab'}}
-      >
-        <span>When</span>
-        <Icon name="flag" size={15} className="text-green-600" />
-        <span>clicked</span>
-      </div>
-      
-      <h3>Motion</h3>
-      <MoveStepsBlock />
-      <TurnDegreesBlock />
-      <GoToBlock />
-      
-      <h3>Looks</h3>
-      <SayBlock />
-      <ThinkBlock />
-      
-      <h3>Control</h3>
-      <RepeatBlock />
+      {Object.entries(BLOCKS_BY_CATEGORY).map(([category, blocks]) => (
+        <div key={category}>
+          <h3>{categoryLabels[category]}</h3>
+          {blocks.map(blockDef => (
+            <GenericBlock
+              key={blockDef.id}
+              definition={blockDef}
+              onDragStart={handleDragStart}
+            />
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

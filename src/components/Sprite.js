@@ -1,17 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import CatSprite from './CatSprite';
-import { useAnimationEngine } from './AnimationEngine';
 
 export default function Sprite({ sprite }) {
-  const { checkCollisions } = useAnimationEngine();
-
-  useEffect(() => {
-    // Delay collision check to ensure state is updated
-    const timer = setTimeout(() => {
-      checkCollisions();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [sprite.x, sprite.y, checkCollisions]);
 
   return (
     <div

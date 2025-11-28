@@ -1,5 +1,25 @@
 import React from "react";
 import { useSpriteStore } from "../store/SpriteStore";
+import { BLOCK_DEFINITIONS } from "../config/blockDefinitions";
+
+const getAnimationLabel = (animation) => {
+  const blockDef = BLOCK_DEFINITIONS[animation.type];
+  if (!blockDef) return `Unknown: ${animation.type}`;
+  
+  let label = blockDef.label;
+  
+  // Replace input placeholders with actual values
+  blockDef.inputs.forEach(input => {
+    const placeholder = `{input:${input.name}}`;
+    const value = animation[input.name];
+    label = label.replace(placeholder, value);
+  });
+  
+  // Remove icon placeholders for display
+  label = label.replace(/{icon:[^}]+}/g, '🏁');
+  
+  return label;
+};
 
 export default function MidArea() {
   const { state, dispatch } = useSpriteStore();
@@ -124,13 +144,7 @@ export default function MidArea() {
                 style={{background: '#dbeafe', padding: '8px', borderRadius: '6px', border: '1px solid #93c5fd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'grab'}}
               >
                 <div style={{flex: 1}}>
-                  {animation.type === 'MOVE_STEPS' && `Move ${animation.steps} steps`}
-                  {animation.type === 'TURN_DEGREES' && `Turn ${animation.degrees} degrees`}
-                  {animation.type === 'GO_TO' && `Go to x:${animation.x} y:${animation.y}`}
-                  {animation.type === 'SAY' && `Say "${animation.text}" for ${animation.duration}s`}
-                  {animation.type === 'THINK' && `Think "${animation.text}" for ${animation.duration}s`}
-                  {animation.type === 'EVENT_FLAG' && 'When flag clicked'}
-                  {animation.type === 'REPEAT' && `Repeat ${animation.times} times`}
+                  {getAnimationLabel(animation)}
                 </div>
                 <button
                   onClick={() => {
