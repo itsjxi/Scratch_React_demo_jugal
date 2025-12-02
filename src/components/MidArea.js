@@ -29,25 +29,31 @@ export default function MidArea() {
     e.preventDefault();
     try {
       const animationData = JSON.parse(e.dataTransfer.getData('text/plain'));
-      
-      // If dragging from existing animation (has sourceIndex), remove original
-      if (animationData.sourceIndex !== undefined) {
-        const newAnimations = selectedSprite.animations.filter((_, i) => i !== animationData.sourceIndex);
-        const { sourceIndex, ...cleanAnimation } = animationData;
-        
-        dispatch({
-          type: 'SET_ANIMATIONS',
-          payload: {
-            spriteId: state.selectedSpriteId,
-            animations: [...newAnimations, cleanAnimation]
+      // Normal drop handling - not into repeat block
+      if (true) {
+        // Normal drop handling
+        if (animationData.sourceIndex !== undefined) {
+          const newAnimations = selectedSprite.animations.filter((_, i) => i !== animationData.sourceIndex);
+          const { sourceIndex, ...cleanAnimation } = animationData;
+          
+          dispatch({
+            type: 'SET_ANIMATIONS',
+            payload: {
+              spriteId: state.selectedSpriteId,
+              animations: [...newAnimations, cleanAnimation]
+            }
+          });
+        } else {
+          // New block from sidebar - initialize children for repeat blocks
+          if (animationData.type === 'REPEAT') {
+            animationData.children = [];
           }
-        });
-      } else {
-        // New block from sidebar
-        dispatch({
-          type: 'ADD_ANIMATION',
-          payload: animationData
-        });
+          
+          dispatch({
+            type: 'ADD_ANIMATION',
+            payload: animationData
+          });
+        }
       }
     } catch (error) {
       console.error('Invalid animation data');
@@ -135,16 +141,121 @@ export default function MidArea() {
               <div 
                 key={index} 
                 draggable
+
                 onDragStart={(e) => {
                   e.dataTransfer.setData('text/plain', JSON.stringify({
                     ...animation,
                     sourceIndex: index
                   }));
                 }}
-                style={{background: '#dbeafe', padding: '8px', borderRadius: '6px', border: '1px solid #93c5fd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'grab'}}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                }}
+                style={{background: animation.type === 'REPEAT' ? '#fef3c7' : '#dbeafe', padding: '8px', borderRadius: '6px', border: '1px solid #93c5fd', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', cursor: 'grab'}}
               >
                 <div style={{flex: 1}}>
-                  {getAnimationLabel(animation)}
+                  <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                    {getAnimationLabel(animation)}
+                  </div>
+                  {animation.type === 'REPEAT' && (
+                    <div 
+                      style={{
+                        marginTop: '8px',
+                        padding: '8px',
+                        backgroundColor: '#f9fafb',
+                        border: '2px dashed #d1d5db',
+                        borderRadius: '6px',
+                        minHeight: '40px',
+                        position: 'relative'
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const childData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                        const newAnimations = [...selectedSprite.animations];
+                        const repeatBlock = newAnimations[index];
+                        
+                        // Only allow one child block
+                        if (repeatBlock.children && repeatBlock.children.length > 0) {
+                          return; // Already has a child, don't add more
+                        }
+                        
+                        if (!repeatBlock.children) repeatBlock.children = [];
+                        const { sourceIndex, ...cleanData } = childData;
+                        repeatBlock.children.push(cleanData);
+                        dispatch({
+                          type: 'SET_ANIMATIONS',
+                          payload: {
+                            spriteId: state.selectedSpriteId,
+                            animations: newAnimations
+                          }
+                        });
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      {animation.children && animation.children.length > 0 ? (
+                        animation.children.map((child, childIndex) => (
+                          <div 
+                            key={childIndex} 
+                            style={{
+                              background: '#dbeafe',
+                              padding: '8px',
+                              margin: '4px 0',
+                              borderRadius: '6px',
+                              border: '1px solid #93c5fd',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start',
+                              cursor: 'default'
+                            }}
+                          >
+                            <div style={{flex: 1}}>
+                              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                {getAnimationLabel(child)}
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const newAnimations = [...selectedSprite.animations];
+                                newAnimations[index].children = newAnimations[index].children.filter((_, i) => i !== childIndex);
+                                dispatch({
+                                  type: 'SET_ANIMATIONS',
+                                  payload: {
+                                    spriteId: state.selectedSpriteId,
+                                    animations: newAnimations
+                                  }
+                                });
+                              }}
+                              style={{
+                                background: 'hsla(260, 60%, 60%, 1)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                padding: '4px 8px',
+                                fontSize: '12px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{
+                          color: '#9ca3af',
+                          fontSize: '12px',
+                          textAlign: 'center',
+                          padding: '8px'
+                        }}>
+                          Drop one block here to repeat
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => {

@@ -25,8 +25,8 @@ function spriteReducer(state, action) {
       const newSprite = {
         id: `sprite${Date.now()}`,
         name: `Sprite ${state.sprites.length + 1}`,
-        x: Math.random() * 200 - 100,
-        y: Math.random() * 200 - 100,
+        x: Math.random() * 200 + 30,
+        y: Math.random() * 200 + 30,
         rotation: 0,
         animations: [],
         speechBubble: null,

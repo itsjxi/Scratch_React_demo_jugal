@@ -23,7 +23,7 @@ export function useDataDrivenEngine() {
     // Extract parameters from animation, excluding type
     const { type, ...params } = animation;
     
-    await handler(sprite, params, dispatchFn);
+    return await handler(sprite, params, dispatchFn);
   }, [dispatch]);
 
   const executeSequence = useCallback(async (spriteId, animations) => {
@@ -33,11 +33,15 @@ export function useDataDrivenEngine() {
     for (let i = 0; i < animations.length; i++) {
       const animation = animations[i];
       
-      if (animation.type === 'REPEAT') {
+      if (animation.type === 'EVENT_FLAG') {
+        // Skip EVENT_FLAG blocks during execution
+        continue;
+      } else if (animation.type === 'REPEAT') {
         // Special handling for repeat blocks
         const handler = EXECUTION_HANDLERS.repeat;
         const { type, ...params } = animation;
-        await handler(sprite, params, dispatch, executeBlock, animations, i);
+        const getCurrentSprite = () => state.sprites.find(s => s.id === spriteId);
+        await handler(sprite, params, dispatch, executeBlock, getCurrentSprite);
       } else {
         await executeBlock(sprite, animation);
       }
@@ -77,7 +81,12 @@ export function useDataDrivenEngine() {
     dispatch({ type: 'SET_PLAYING', payload: true });
 
     try {
-      const promises = state.sprites.map(sprite => 
+      // Only run sprites that have EVENT_FLAG blocks
+      const spritesToRun = state.sprites.filter(sprite => 
+        sprite.animations.some(anim => anim.type === 'EVENT_FLAG')
+      );
+
+      const promises = spritesToRun.map(sprite => 
         executeSequence(sprite.id, sprite.animations)
       );
 

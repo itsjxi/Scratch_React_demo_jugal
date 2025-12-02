@@ -104,7 +104,9 @@ export const BLOCK_DEFINITIONS = {
     execution: {
       type: 'control',
       handler: 'repeat'
-    }
+    },
+    isContainer: true,
+    children: []
   },
 
   WAIT: {
@@ -128,3 +130,10 @@ export const BLOCKS_BY_CATEGORY = Object.values(BLOCK_DEFINITIONS).reduce((acc, 
   acc[block.category].push(block);
   return acc;
 }, {});
+
+// Helper to create repeat block with children
+export const createRepeatBlock = (times, children = []) => ({
+  type: 'REPEAT',
+  times,
+  children
+});
